@@ -1,0 +1,5 @@
+app/
+vendor/
+phpunit.phar
+composer.lock
+*/.env

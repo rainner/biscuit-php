@@ -1,0 +1,26 @@
+{
+    "name": "rainner/biscuit-php",
+    "description": "Biscuit is a tiny but capable PHP framework for building web apps and API endpoints which use the MVC and RESTful architectural styles for handling requests.",
+    "type": "library",
+    "license": "MIT",
+	"keywords": ["php-framework", "php", "framework", "webapp", "api", "restful"],
+    "authors": [
+        {
+            "name": "Rainner Lins",
+            "email": "rainnerlins@gmail.com",
+            "homepage": "http://rainnerlins.com/",
+			"role": "Developer"
+        }
+    ],
+    "require": {
+		"php": ">=5.4"
+	},
+	"require-dev": {
+
+	},
+	"autoload": {
+		"psr-4": {
+			"Biscuit\\": "src/Biscuit"
+		}
+	}
+}
