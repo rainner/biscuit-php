@@ -1,9 +1,0 @@
-TODO:
-
-1. Finish implementing methods in \Biscuit\Cache\*.
-
-2. Test \Biscuit\Db\Sqlite.
-
-3. Write documentation.
-
-4. Update readme.
