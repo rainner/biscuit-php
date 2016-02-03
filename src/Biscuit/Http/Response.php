@@ -2,9 +2,10 @@
 /**
  * Handles sending back a response to the client.
  *
- * @author     Rainner Lins | http://rainnerlins.com
- * @license    See: /docs/license.txt
- * @copyright  All Rights Reserved
+ * @package    Biscuit PHP Framework
+ * @author     Rainner Lins <http://rainnerlins.com/>
+ * @copyright  (c) All Rights Reserved
+ * @license    See included LICENSE file
  */
 namespace Biscuit\Http;
 

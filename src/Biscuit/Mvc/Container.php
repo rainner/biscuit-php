@@ -2,15 +2,18 @@
 /**
  * Dependency injection container.
  *
- * @author     Rainner Lins | http://rainnerlins.com
- * @license    See: /docs/license.txt
- * @copyright  All Rights Reserved
+ * @package    Biscuit PHP Framework
+ * @author     Rainner Lins <http://rainnerlins.com/>
+ * @copyright  (c) All Rights Reserved
+ * @license    See included LICENSE file
  */
 namespace Biscuit\Mvc;
 
 use Biscuit\Util\Sanitize;
-use Exception;
 use ArrayAccess;
+use BadMethodCallException;
+use InvalidArgumentException;
+use Exception;
 use Closure;
 
 class Container implements ArrayAccess {
@@ -101,8 +104,8 @@ class Container implements ArrayAccess {
         $name = Sanitize::toAlnum( $name );
         $instance = null;
 
-        if( empty( $name ) )   throw new Exception( 'Must specify a valid String name for object being injected.' );
-        if( empty( $object ) ) throw new Exception( 'Must specify a valid Object/Closure/String to be injected.' );
+        if( empty( $name ) )   throw new InvalidArgumentException( 'Must specify a valid String name for object being injected.' );
+        if( empty( $object ) ) throw new InvalidArgumentException( 'Must specify a valid Object/Closure/String to be injected.' );
 
         if( is_string( $object ) )
         {
@@ -126,7 +129,7 @@ class Container implements ArrayAccess {
         }
         if( is_object( $instance ) !== true )
         {
-            throw new Exception( 'Injection arguments ('.$name.': '.gettype( $object ).') must resolve to a valid Object instance.' );
+            throw new BadMethodCallException( 'Injection arguments ('.$name.': '.gettype( $object ).') must resolve to a valid Object instance.' );
         }
         $this->_objects[ $name ] = $instance;
     }
@@ -142,7 +145,7 @@ class Container implements ArrayAccess {
         {
             return $this->_objects[ $name ];
         }
-        throw new Exception( 'No object instance with name ('.$name.') could be found.' );
+        throw new InvalidArgumentException( 'No object instance with name ('.$name.') could be found.' );
     }
 
     /**

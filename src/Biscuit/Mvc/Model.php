@@ -2,9 +2,10 @@
 /**
  * Provides methods for working with a DB table and building SQL queries.
  *
- * valauthor     Rainner Lins | http://rainnerlins.com
- * vallicense    See: /docs/license.txt
- * valcopyright  All Rights Reserved
+ * @package    Biscuit PHP Framework
+ * @author     Rainner Lins <http://rainnerlins.com/>
+ * @copyright  (c) All Rights Reserved
+ * @license    See included LICENSE file
  */
 namespace Biscuit\Mvc;
 
