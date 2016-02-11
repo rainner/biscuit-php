@@ -1,6 +1,6 @@
 <?php
 /**
- * Converts data rows into multi-level data tree arrays.
+ * Handles building nested data trees from a single data set.
  *
  * @package    Biscuit PHP Framework
  * @author     Rainner Lins <http://rainnerlins.com/>
@@ -9,65 +9,99 @@
  */
 namespace Biscuit\Data;
 
+use Closure;
+
 class Tree {
 
-    // external data
-    protected $data = array();
+    // external data to be used
+    protected $data_set = array();
+
+    // primary key name in data set
+    protected $key_primary = 'id';
+
+    // parent key name in data set
+    protected $key_parent = 'parent_id';
+
+    // callback used to build each item
+    protected $cb_item = null;
+
+    // callback used to build main container
+    protected $cb_build = null;
 
     /**
      * Constructor
      */
-    public function __construct( $data=array() )
+    public function __construct()
     {
-        $this->seed( $data );
+        $this->cb_item  = function( $item ){ return ''; };
+        $this->cb_build = function( $items ){ return ''; };
     }
 
     /**
-     * Seed this class with some external data (rows)
+     * Seed this class with some external data
      */
-    public function seed( $data=array() )
+    public function setData( $data=array(), $key_primary='id', $key_parent='parent_id' )
     {
-        if( !empty( $data ) && is_array( $data ) )
-        {
-            foreach( $data as $row )
-            {
-                if( empty( $row['id'] ) || !isset( $row['parent_id'] ) ) continue;
+        $this->data_set    = array();
+        $this->key_primary = $key_primary;
+        $this->key_parent  = $key_parent;
 
-                $this->data[ $row['parent_id'] ][] = $row;
+        if( is_array( $data ) && !empty( $key_primary ) && !empty( $key_parent ) )
+        {
+            foreach( $data as $item )
+            {
+                if( !empty( $item[ $key_primary ] ) && isset( $item[ $key_parent ] ) )
+                {
+                    $this->data_set[ $item[ $key_parent ] ][] = $item;
+                }
             }
         }
         return $this;
     }
 
     /**
-     * Export data as a multi-dimensional HTML list menu
+     * Set the item builder closure
      */
-    public function getMenu( $parent=0, $active=null, $link='#item-' )
+    public function onItem( Closure $callback )
     {
-        $html = '';
-
-        if( isset( $this->data[ $parent ] ) )
-        {
-            $html .= '<ul>';
-
-            foreach( $this->data[ $parent ] as $row )
-            {
-                $a = ( is_numeric( $active ) && $active == $row['id'] ) ? ' class="active"' : '';
-
-                $html .= '<li>';
-                $html .= '<a'.$a.' href="'.$link.$row['id'].'">' . $row['name']. '</a>';
-                $html .= $this->getMenu( $row['id'], $active, $link );
-                $html .= '</li>';
-            }
-            $html .= '</ul>';
-        }
-        return $html;
+        $this->cb_item = $callback->bindTo( $this );
     }
 
+    /**
+     * Set the container builder closure
+     */
+    public function onBuild( Closure $callback )
+    {
+        $this->cb_build = $callback->bindTo( $this );
+    }
+
+    /**
+     * Build final output string
+     */
+    public function build( $parent=0, $depth=1, $indent=1 )
+    {
+        $items  = '';
+        $output = '';
+
+        if( isset( $this->data_set[ $parent ] ) )
+        {
+            foreach( $this->data_set[ $parent ] as $item )
+            {
+                $items .= call_user_func( $this->cb_item, $item, $depth, $indent );
+                $items .= $this->build( @$item[ $this->key_primary ], $depth + 1, $indent + 2 );
+            }
+            $output .= call_user_func( $this->cb_build, $items, $depth, $indent );
+        }
+        return $output;
+    }
+
+    /**
+     * Formats a single line
+     */
+    public function line( $indent=1, $line='' )
+    {
+        return "\n" . str_repeat( "\t", $indent ) . trim( $line );
+    }
 
 }
-
-
-
-
 
