@@ -1,0 +1,25 @@
+{
+    "name": "rainner/biscuit-php",
+    "description": "Biscuit PHP is a small stand-alone collection of classes that work together as a framework to help build small server-side applications with PHP.",
+    "type": "framework",
+    "license": "MIT",
+	"keywords": ["php", "framework", "library", "database", "http", "restful", "slim", "small"],
+    "authors": [
+        {
+            "name": "Rainner Lins",
+            "email": "rainnerlins@gmail.com",
+			"role": "Developer"
+        }
+    ],
+    "require": {
+		"php": ">=5.5"
+	},
+	"require-dev": {
+
+	},
+	"autoload": {
+		"psr-4": {
+			"Biscuit\\": "src"
+		}
+	}
+}

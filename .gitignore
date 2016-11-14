@@ -1,0 +1,9 @@
+app/
+docs/
+vendor/
+phpunit.phar
+composer.lock
+errors.log
+refactor.php
+index.php
+boot.php
