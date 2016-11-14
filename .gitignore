@@ -1,4 +1,0 @@
-app/
-vendor/
-composer.lock
-*/.env
