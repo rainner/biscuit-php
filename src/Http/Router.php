@@ -499,23 +499,52 @@ class Router {
     }
 
     /**
-     * Load and filder list of menu items data from a file
+     * Load and filter list of menu items data from a file
      */
     private function _loadMenuData( $file )
     {
         $file   = Sanitize::toPath( $file );
         $menu   = is_file( $file ) ? include_once( $file ) : [];
         $output = [];
+        $count  = 1;
 
         if( is_array( $menu ) )
         {
-            foreach( $menu as $item )
+            foreach( $menu as $idx => $item )
             {
-                $controller     = Utils::value( @$item["controller"], "" );
-                $action         = Utils::value( @$item["action"], "" );
-                $item["path"]   = Utils::buildPath( $this->_area, $controller, $action );
-                $item["active"] = ( $controller === $this->_controller ) ? "active" : "";
-                $output[] = $item;
+                $active = "";
+                $url    = Utils::value( @$item["url"], Server::getBaseUrl() );
+
+                if( empty( $item["url"] ) ) // no url given, resolve one...
+                {
+                    if( !empty( $item["route"] ) ) // full route given, check it...
+                    {
+                        if( preg_match( "/^(\/".$this->_area.")?(\/".$this->_controller.")/", $item["route"] ) === 1 )
+                        {
+                            $active = "active"; // route matched current location
+                        }
+                        $url = Server::getBaseUrl( $item["route"] );
+                    }
+                    else if( !empty( $item["controller"] ) ) // contorller name given, check it...
+                    {
+                        if( $this->_controller === $item["controller"] )
+                        {
+                            $active = "active"; // controller matched current controller
+                        }
+                        $area  = ( $this->_area !== "site" ) ? $this->_area : "";
+                        $route = Utils::buildPath( $area, $item["controller"], @$item["action"] );
+                        $url   = Server::getBaseUrl( $route );
+                    }
+                }
+                $output[] = array(
+                    "name"   => Utils::value( @$item["name"], "Page".$count ),
+                    "title"  => Utils::value( @$item["title"], "Page ".$count ),
+                    "info"   => Utils::value( @$item["info"], "Menu item for page ".$count ),
+                    "target" => Utils::value( @$item["target"], "" ),
+                    "active" => $active,
+                    "url"    => $url,
+                );
+                $count++;
             }
         }
         return $output;
