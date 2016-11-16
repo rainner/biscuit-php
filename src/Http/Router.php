@@ -46,8 +46,8 @@ class Router {
         $this->_response = new Response();
         $this->_method   = Connection::getMethod();
 
-        $this->setBasePath( @PATH_AREAS );
-        $this->setPublicPath( @PATH_ROOT."/public" );
+        $this->setBasePath( dirname( @$_SERVER["DOCUMENT_ROOT"] )."/areas" );
+        $this->setPublicPath( @$_SERVER["DOCUMENT_ROOT"] );
         $this->setRoute( Connection::getPath() );
     }
 
@@ -158,12 +158,18 @@ class Router {
      */
     public function resolve( $fallback=null )
     {
+        // resolve local paths
+        $this->_cnfpath = $this->_basepath."/".$this->_area."/configs";
+        $this->_ctrpath = $this->_basepath."/".$this->_area."/controllers";
+        $this->_tplpath = $this->_basepath."/".$this->_area."/templates";
+        $this->_csspath = $this->_pubpath."/css";
+        $this->_jspath  = $this->_pubpath."/js";
+
         // load area config file, if any
         if( $setup = realpath( $this->_cnfpath."/setup.php" ) )
         {
             include_once( $setup ); // init/inject objects, etc...
         }
-
         // controller found, trigegr actions and let it send a repsonse
         if( $controller = realpath( $this->_ctrpath."/".$this->_controller.".php" ) )
         {
@@ -173,14 +179,12 @@ class Router {
             $this->trigger( $this->_method, "*", $this->_params ); // all actions
             $this->trigger( $this->_method, $this->_action, $this->_params ); // request action
         }
-
         // controller not found, or did not respond, handle fallback/404 response
         if( $fallback instanceof Closure )
         {
             $fallback = $fallback->bindTo( $this );
             call_user_func( $fallback );
         }
-
         // final text response
         $this->_response->sendText( 404,
             "The requested route could not be resolved, or did not send a response: (".$this->_route.")."
@@ -193,8 +197,6 @@ class Router {
     public function setPublicPath( $path )
     {
         $this->_pubpath = Sanitize::toPath( $path );
-        $this->_csspath = $this->_pubpath."/css";
-        $this->_jspath  = $this->_pubpath."/js";
     }
 
     /**
@@ -233,9 +235,6 @@ class Router {
         {
             $this->_action = Sanitize::toKey( array_shift( $this->_params ) );
         }
-        $this->_cnfpath = $this->_basepath."/".$this->_area."/configs";
-        $this->_ctrpath = $this->_basepath."/".$this->_area."/controllers";
-        $this->_tplpath = $this->_basepath."/".$this->_area."/templates";
     }
 
     /**
