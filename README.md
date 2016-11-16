@@ -18,6 +18,7 @@ This is a table that lists the current Biscuit PHP framework namespaces and what
 
 | Namespace            | Description                                                             |
 | -------------------- | ----------------------------------------------------------------------- |
+| `Biscuit\Boot\*`     | Classes for managing error handling and runtime environment options.    |
 | `Biscuit\Crypt\*`    | Classes for hashing, encrypting and decrypting strings.                 |
 | `Biscuit\Data\*`     | Classes for handling, parsing, serializing, storing and rendering data. |
 | `Biscuit\Db\*`       | Classes for handling database connection using a common interface.      |
