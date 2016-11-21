@@ -535,14 +535,9 @@ class Router {
                         $url   = Server::getBaseUrl( $route );
                     }
                 }
-                $output[] = array(
-                    "name"   => Utils::value( @$item["name"], "Page".$count ),
-                    "title"  => Utils::value( @$item["title"], "Page ".$count ),
-                    "info"   => Utils::value( @$item["info"], "Menu item for page ".$count ),
-                    "target" => Utils::value( @$item["target"], "" ),
-                    "active" => $active,
-                    "url"    => $url,
-                );
+                $item["active"] = $active;
+                $item["url"] = $url;
+                $output[] = $item;
                 $count++;
             }
         }
