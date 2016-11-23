@@ -113,11 +113,27 @@ class Numeric {
     }
 
     /**
+     * Conver a string or number value to timestamp
+     */
+    public static function toTimestamp( $value="" )
+    {
+        if( is_numeric( $value ) )
+        {
+            return intval( $value );
+        }
+        if( is_string( $value ) && $time = @strtotime( $value ) )
+        {
+            return $time;
+        }
+        return time();
+    }
+
+    /**
      * Converts a past-timestamp into a date string
      */
-    public static function toDate( $time=0, $format="F jS, Y", $default="never" )
+    public static function toDate( $time=0, $format="F jS, Y", $default="Never" )
     {
-        $time   = Sanitize::toTimestamp( $time );
+        $time   = self::toTimestamp( $time );
         $format = Utils::value( $format, "F jS, Y" );
 
         if( $time > 0 )
@@ -132,7 +148,7 @@ class Numeric {
      */
     public static function toElapsed( $time=0, $default="just now" )
     {
-        $time    = Sanitize::toTimestamp( $time );
+        $time    = self::toTimestamp( $time );
         $elapsed = time() - $time;
 
         if( $elapsed > 0 )
@@ -156,7 +172,7 @@ class Numeric {
      */
     public static function toCountdown( $time=0, $wait=300 )
     {
-        $time    = Sanitize::toTimestamp( $time );
+        $time    = self::toTimestamp( $time );
         $elapsed = $time - ( time() - $wait );
 
         if( $elapsed > 0 )
@@ -176,7 +192,7 @@ class Numeric {
      */
     public static function toAge( $time=0 )
     {
-        $time    = Sanitize::toTimestamp( $time );
+        $time    = self::toTimestamp( $time );
         $elapsed = time() - $time;
 
         if( $elapsed > 0 )

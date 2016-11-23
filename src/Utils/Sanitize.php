@@ -264,22 +264,6 @@ class Sanitize {
     }
 
     /**
-     * Conver a string or number value to timestamp
-     */
-    public static function toTimestamp( $value=null )
-    {
-        if( is_numeric( $value ) )
-        {
-            return intval( $value );
-        }
-        if( is_string( $value ) )
-        {
-            return strtotime( trim( $value ) );
-        }
-        return time();
-    }
-
-    /**
      * Common characters present in a phone number
      */
     public static function toPhone( $value=null )
