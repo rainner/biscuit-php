@@ -114,6 +114,26 @@ class Utils {
     }
 
     /**
+     * Convert an associative array into a attributes string
+     */
+    public static function attributes( $list=[] )
+    {
+        $atts = [];
+
+        if( !empty( $list ) && is_array( $list ) )
+        {
+            foreach( $list as $key => $value )
+            {
+                $key = Sanitize::toKey( $key );
+                $value = self::escape( $value, '"' );
+                if( is_numeric( $key ) ) continue;
+                $atts[] = trim( $key ) .'="'. $value .'"';
+            }
+        }
+        return implode( " ", $atts );
+    }
+
+    /**
      * Serializes a value to string
      */
     public static function serialize( $value=null )
@@ -188,13 +208,13 @@ class Utils {
     }
 
     /**
-     * escapes a string for safe usage
+     * Escapes a string for safe usage
      */
-    public static function escape( $value="" )
+    public static function escape( $value="", $char="'" )
     {
         $value = Sanitize::toString( $value );
         $value = self::unescape( $value );
-        $value = str_replace( "'", "\'", $value );
+        $value = str_replace( $char, "\\".$char, $value );
         return $value;
     }
 
