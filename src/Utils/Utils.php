@@ -127,7 +127,7 @@ class Utils {
                 $key = Sanitize::toKey( $key );
                 $value = self::escape( $value, '"' );
                 if( is_numeric( $key ) ) continue;
-                $atts[] = trim( $key ) .'="'. $value .'"';
+                $atts[] = $key .'="'. $value .'"';
             }
         }
         return implode( " ", $atts );
