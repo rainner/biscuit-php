@@ -235,7 +235,7 @@ class Paginate {
     /**
      * Get list of page html links
      */
-    public function getLinks( $max=7, $default="" )
+    public function getLinks( $max=7, $default="Page 1/1" )
     {
         $list  = "";
         $data  = $this->getData( $max );
@@ -258,9 +258,11 @@ class Paginate {
             {
                 $list .= '<li>'.$next["link"].'</li>';
             }
-            return '<ul class="pagination pg-wrap">' . $list . '</ul>';
         }
-        return $default;
+        else {
+            $list .= '<li><a class="disabled" href="#">'.$default.'</a></li>';
+        }
+        return '<ul class="pagination pg-wrap">' . $list . '</ul>';
     }
 
     /**

@@ -22,9 +22,28 @@ class Utils {
 
         foreach( $args as $value )
         {
-            if( is_string( $value ) ) $value = trim( $value );
-            if( is_null( $value ) || $value === "" ) continue;
-            $output = $value; break;
+            if( $value || $value === false || $value === 0 )
+            {
+                return $value;
+            }
+        }
+        return $output;
+    }
+
+    /**
+     * Resolve one of the given arguments as a defined constant, using the last argument as the default value
+     */
+    public static function constant()
+    {
+        $args   = func_get_args();
+        $output = array_pop( $args );
+
+        foreach( $args as $name )
+        {
+            if( defined( $name ) )
+            {
+                return constant( $name );
+            }
         }
         return $output;
     }
@@ -114,14 +133,30 @@ class Utils {
     }
 
     /**
+     * Convert an associative array into a attributes string
+     */
+    public static function attributes( $list=[] )
+    {
+        $atts = [];
+
+        if( !empty( $list ) && is_array( $list ) )
+        {
+            foreach( $list as $key => $value )
+            {
+                $key = Sanitize::toKey( $key );
+                $value = self::escape( $value, '"' );
+                if( is_numeric( $key ) ) continue;
+                $atts[] = $key .'="'. $value .'"';
+            }
+        }
+        return implode( " ", $atts );
+    }
+
+    /**
      * Serializes a value to string
      */
     public static function serialize( $value=null )
     {
-        if( $value === null )  return "null";
-        if( $value === true )  return "true";
-        if( $value === false ) return "false";
-
         if( is_array( $value ) )
         {
             return json_encode( $value );
@@ -129,6 +164,14 @@ class Utils {
         if( is_object( $value ) )
         {
             return serialize( $value );
+        }
+        if( is_bool( $value ) )
+        {
+            return ( $value === true ) ? "1" : "0";
+        }
+        if( is_null( $value ) )
+        {
+            return "";
         }
         return trim( $value );
     }
@@ -140,12 +183,6 @@ class Utils {
     {
         if( is_string( $value ) )
         {
-            $tmp = strtolower( trim( $value ) );
-            if( $tmp === "null" )     return null;
-            if( $tmp === "true" )     return true;
-            if( $tmp === "false" )    return false;
-            if( is_numeric( $tmp ) )  return $tmp + 0;
-
             if( $array = @json_decode( $value, true ) )
             {
                 return $array;
@@ -153,6 +190,20 @@ class Utils {
             if( $object = @unserialize( $value ) )
             {
                 return $object;
+            }
+            if( is_numeric( $value ) )
+            {
+                return 0 + $value;
+            }
+            if( $value === "[]" || $value === "{}" )
+            {
+                return array();
+            }
+            switch( strtolower( trim( $value ) ) )
+            {
+                case "null"  :  return null;
+                case "true"  :  return true;
+                case "false" :  return false;
             }
         }
         return $value;
@@ -188,13 +239,13 @@ class Utils {
     }
 
     /**
-     * escapes a string for safe usage
+     * Escapes a string for safe usage
      */
-    public static function escape( $value="" )
+    public static function escape( $value="", $char="'" )
     {
         $value = Sanitize::toString( $value );
         $value = self::unescape( $value );
-        $value = str_replace( "'", "\'", $value );
+        $value = str_replace( $char, "\\".$char, $value );
         return $value;
     }
 

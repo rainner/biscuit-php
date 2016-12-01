@@ -1,6 +1,7 @@
 app/
 docs/
 vendor/
+.phpintel/
 phpunit.phar
 composer.lock
 errors.log
