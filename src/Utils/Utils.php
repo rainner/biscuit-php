@@ -22,9 +22,28 @@ class Utils {
 
         foreach( $args as $value )
         {
-            if( is_string( $value ) ) $value = trim( $value );
-            if( is_null( $value ) || $value === "" ) continue;
-            $output = $value; break;
+            if( $value || $value === false || $value === 0 )
+            {
+                return $value;
+            }
+        }
+        return $output;
+    }
+
+    /**
+     * Resolve one of the given arguments as a defined constant, using the last argument as the default value
+     */
+    public static function constant()
+    {
+        $args   = func_get_args();
+        $output = array_pop( $args );
+
+        foreach( $args as $name )
+        {
+            if( defined( $name ) )
+            {
+                return constant( $name );
+            }
         }
         return $output;
     }
