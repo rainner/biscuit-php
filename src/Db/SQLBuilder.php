@@ -164,7 +164,7 @@ class SQLBuilder {
 
         if( !empty( $table ) && !empty( $condition ) )
         {
-            $this->_joins[] = "(LEFT OUTER JOIN ".$table." ON ".$condition.")";
+            $this->_joins[] = "LEFT OUTER JOIN ".$table." ON ".$condition;
         }
         return $this;
     }
