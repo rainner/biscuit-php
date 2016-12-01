@@ -400,28 +400,41 @@ class Router {
     /**
      * Helper: send rendered template HTML response
      */
-    public function sendTemplate( $status, $body=null, $tplname="main" )
+    public function sendTemplate( $status, $data=[], $file="" )
     {
-        if( is_array( $body ) )
+        $file = basename( $file, ".php" );
+        $file = !empty( $file ) ? $file : "main";
+        $file = Sanitize::toPath( $this->_tplpath."/".$file.".php" );
+
+        if( is_file( $file ) )
         {
-            $this->_data = array_merge( $this->_data, $body );
+            if( is_array( $data ) )
+            {
+                $this->_data = array_merge( $this->_data, $data );
+            }
             $this->_data["controller"] = $this->_getControllerInfo();
             $this->_data["menulist"]   = $this->_loadMenuData( $this->_cnfpath."/menu.php" );
-            $this->_response->sendTemplate( $status, $this->_tplpath."/".$tplname.".php", $this->_data );
+            $this->_response->sendTemplate( $status, $file, $this->_data );
         }
-        $this->sendHtml( $status, $body );
+        $this->_response->sendHtml( $status, "Template file not found (".$file.")" );
     }
 
     /**
      * Helper: send rendered HTML view for current route
      */
-    public function sendView( $status, $file="", $data=[] )
+    public function sendView( $status, $data=[], $file="" )
     {
-        $file = Sanitize::toPath( $this->_tplpath."/".$this->_controller."/".$file );
+        $file = basename( $file, ".php" );
+        $file = !empty( $file ) ? $file : $this->_action;
+        $file = Sanitize::toPath( $this->_tplpath."/".$this->_controller."/".$file.".php" );
 
         if( is_file( $file ) )
         {
-            $this->_response->sendTemplate( $status, $file, $data );
+            if( is_array( $data ) )
+            {
+                $this->_data = array_merge( $this->_data, $data );
+            }
+            $this->_response->sendTemplate( $status, $file, $this->_data );
         }
         $this->_response->sendHtml( $status, "View file not found (".$file.")" );
     }
@@ -429,7 +442,7 @@ class Router {
     /**
      * Helper: send JSON response
      */
-    public function sendJson( $status, $data=null )
+    public function sendJson( $status, $data=[] )
     {
         $this->_response->sendJson( $status, $data );
     }
