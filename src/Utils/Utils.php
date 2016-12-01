@@ -157,10 +157,6 @@ class Utils {
      */
     public static function serialize( $value=null )
     {
-        if( $value === null )  return "null";
-        if( $value === true )  return "true";
-        if( $value === false ) return "false";
-
         if( is_array( $value ) )
         {
             return json_encode( $value );
@@ -168,6 +164,14 @@ class Utils {
         if( is_object( $value ) )
         {
             return serialize( $value );
+        }
+        if( is_bool( $value ) )
+        {
+            return ( $value === true ) ? "1" : "0";
+        }
+        if( is_null( $value ) )
+        {
+            return "";
         }
         return trim( $value );
     }
@@ -179,12 +183,6 @@ class Utils {
     {
         if( is_string( $value ) )
         {
-            $tmp = strtolower( trim( $value ) );
-            if( $tmp === "null" )     return null;
-            if( $tmp === "true" )     return true;
-            if( $tmp === "false" )    return false;
-            if( is_numeric( $tmp ) )  return $tmp + 0;
-
             if( $array = @json_decode( $value, true ) )
             {
                 return $array;
@@ -192,6 +190,20 @@ class Utils {
             if( $object = @unserialize( $value ) )
             {
                 return $object;
+            }
+            if( is_numeric( $value ) )
+            {
+                return 0 + $value;
+            }
+            if( $value === "[]" || $value === "{}" )
+            {
+                return array();
+            }
+            switch( strtolower( trim( $value ) ) )
+            {
+                case "null"  :  return null;
+                case "true"  :  return true;
+                case "false" :  return false;
             }
         }
         return $value;
