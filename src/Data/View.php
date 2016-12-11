@@ -119,7 +119,7 @@ class View extends Registry {
      */
     public function resolveUrl( $value="" )
     {
-        return Server::getFullUrl( $value );
+        return Server::resolveUrl( $value );
     }
 
     /**
