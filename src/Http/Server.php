@@ -223,6 +223,21 @@ class Server {
     }
 
     /**
+     * Parse given value into a full url
+     */
+    public static function getFullUrl( $value="" )
+    {
+        if( !empty( $value ) && is_string( $value ) )
+        {
+            if( preg_match( "/^([\w\-]+\:)?\/\/.*$/i", $value ) === 1 )
+            {
+                return $value; // proto://.. or just //...
+            }
+        }
+        return self::getBaseUrl( $value );
+    }
+
+    /**
      * Get current request URL as is
      */
     public static function getUrl()
