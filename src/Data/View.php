@@ -107,19 +107,27 @@ class View extends Registry {
     }
 
     /**
-     * Helper: Get full page url with param
-     */
-    public function currentUrl()
-    {
-        return Server::getUrl();
-    }
-
-    /**
      * Helper: Get public web url for a local file if it exists
      */
     public function fileUrl( $file="" )
     {
         return Server::getFileUrl( $file );
+    }
+
+    /**
+     * Helper: Resolve a full url
+     */
+    public function resolveUrl( $value="" )
+    {
+        return Server::getFullUrl( $value );
+    }
+
+    /**
+     * Helper: Get full page url with param
+     */
+    public function currentUrl()
+    {
+        return Server::getUrl();
     }
 
     /**
