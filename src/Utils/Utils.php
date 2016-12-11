@@ -143,9 +143,9 @@ class Utils {
         {
             foreach( $list as $key => $value )
             {
-                $key = Sanitize::toKey( $key );
-                $value = self::escape( $value, '"' );
                 if( is_numeric( $key ) ) continue;
+                $key = Sanitize::toSlug( $key );
+                $value = self::escape( $value, '"' );
                 $atts[] = $key .'="'. $value .'"';
             }
         }
