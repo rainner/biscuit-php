@@ -223,9 +223,18 @@ class Server {
     }
 
     /**
+     * Get current request URL as is
+     */
+    public static function getUrl()
+    {
+        $path = str_replace( self::getBasePath(), "", trim( $_SERVER["REQUEST_URI"] ) );
+        return self::getBaseUrl( $path );
+    }
+
+    /**
      * Parse given value into a full url
      */
-    public static function getFullUrl( $value="" )
+    public static function resolveUrl( $value="" )
     {
         if( !empty( $value ) && is_string( $value ) )
         {
@@ -233,17 +242,12 @@ class Server {
             {
                 return $value; // proto://.. or just //...
             }
+            else if( preg_match( "/^\/{1}.*$/i", $value ) === 1 )
+            {
+                return self::getBaseUrl( $value ); // relative path
+            }
         }
-        return self::getBaseUrl( $value );
-    }
-
-    /**
-     * Get current request URL as is
-     */
-    public static function getUrl()
-    {
-        $path = str_replace( self::getBasePath(), "", trim( $_SERVER["REQUEST_URI"] ) );
-        return self::getBaseUrl( $path );
+        return $value; // as is
     }
 
     /**
