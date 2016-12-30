@@ -41,8 +41,8 @@ class Sanitize {
      */
     public static function toFloat( $value=null )
     {
-        $value = preg_replace( "/[^\d\-\.]+/", "", trim( $value ) );
-        $value = is_numeric( $value ) ? $value : 0;
+        $value = Utils::replace( $value, "/[^\d\-\.]+/" );
+        $value = is_numeric( $value ) ? $value + 0 : 0;
         return (float) $value;
     }
 
@@ -51,8 +51,8 @@ class Sanitize {
      */
     public static function toNumber( $value=null )
     {
-        $value = preg_replace( "/[^\d\-]+/", "", trim( $value ) );
-        $value = is_numeric( $value ) ? $value : 0;
+        $value = Utils::replace( $value, "/[^\d\-\.]+/" );
+        $value = is_numeric( $value ) ? $value + 0 : 0;
         return (int) $value;
     }
 
@@ -85,7 +85,7 @@ class Sanitize {
     {
         $value = self::toString( $value );
         $value = html_entity_decode( $value );
-        $value = filter_var( $value, FILTER_SANITIZE_STRING );
+        $value = filter_var( $value, FILTER_SANITIZE_STRING,  FILTER_FLAG_NO_ENCODE_QUOTES | FILTER_FLAG_ENCODE_LOW );
         $value = trim( $value );
         return $value;
     }
@@ -95,7 +95,7 @@ class Sanitize {
      */
     public static function toAlnum( $value=null )
     {
-        $value = Utils::replace( $value, "/[^a-zA-Z0-9]+/i" );
+        $value = Utils::replace( $value, "/[^a-zA-Z0-9]+/u" );
         return $value;
     }
 
@@ -104,8 +104,8 @@ class Sanitize {
      */
     public static function toSingleSpaces( $value=null )
     {
-        $value = preg_replace( "/[\t\r\n\s\h\v]+/", " ", $value );
-        $value = preg_replace( "/\s\s+/", " ", $value );
+        $value = Utils::replace( $value, "/[\t\r\n\s\h\v]+/", " " );
+        $value = Utils::replace( $value, "/\s\s+/", " " );
         $value = trim( $value );
         return $value;
     }
@@ -154,9 +154,14 @@ class Sanitize {
     {
         $value  = Utils::replace( $value, "/[^a-zA-Z0-9\ ]+/u", " " );
         $words  = explode( " ", self::toSingleSpaces( $value ) );
-        $first  = strtolower( array_shift( $words ) );
-        $output = $first ." ". ucwords( strtolower( implode( " ", $words ) ) );
-        return str_replace( " ", "", $output );
+
+        if( count( $words ) > 1 )
+        {
+            $first  = strtolower( array_shift( $words ) );
+            $output = $first ." ". ucwords( strtolower( implode( " ", $words ) ) );
+            return str_replace( " ", "", $output );
+        }
+        return implode( "", $words );
     }
 
     /**
@@ -164,9 +169,15 @@ class Sanitize {
      */
     public static function toFullCamelCase( $value=null )
     {
-        $value = Utils::replace( $value, "/[^a-zA-Z0-9\ ]+/u", " " );
-        $value = ucwords( self::toLowerCase( $value ) );
-        return str_replace( " ", "", $value );
+        $value  = Utils::replace( $value, "/[^a-zA-Z0-9\ ]+/u", " " );
+        $words  = explode( " ", self::toSingleSpaces( $value ) );
+
+        if( count( $words ) > 1 )
+        {
+            $output = ucwords( strtolower( implode( " ", $words ) ) );
+            return str_replace( " ", "", $output );
+        }
+        return implode( "", $words );
     }
 
     /**
@@ -174,7 +185,6 @@ class Sanitize {
      */
     public static function toKey( $value=null )
     {
-        $value = trim( $value );
         $value = Utils::replace( $value, "/[^\w\.]+/u", "_" );
         $value = Utils::replace( $value, "/\_\_+/u", "_" );
         $value = trim( $value, "._ " );
@@ -198,13 +208,15 @@ class Sanitize {
      */
     public static function toParam( $value=null )
     {
-        $value = Utils::replace( $value, "/[^\w\.\,\-\=\*\@\#\:\?\(\)\ ]+/u" );
+        $value = html_entity_decode( self::toString( $value ) );
+        $value = Utils::replace( $value, "/[^\w\.\,\-\=\*\@\#\:\?\(\)\ \\]+/u" );
         $value = Utils::replace( $value, "/\,\,+/u", "," );
         $value = Utils::replace( $value, "/\.\.+/u", "." );
         $value = Utils::replace( $value, "/\=\=+/u", "=" );
         $value = Utils::replace( $value, "/\*\*+/u", "*" );
         $value = Utils::replace( $value, "/\@\@+/u", "@" );
         $value = Utils::replace( $value, "/\#\#+/u", "#" );
+        $value = Utils::replace( $value, "/\\\\+/u", "\\" );
         $value = self::toSingleSpaces( trim( $value, ".,= " ) );
         return $value;
     }
@@ -215,8 +227,8 @@ class Sanitize {
     public static function toSqlName( $value=null )
     {
         $value = self::toParam( $value );
-        $value = preg_replace( "/\b(?!.[A-Z]+)(?!as|AS)([\w]+)\b/u", "`$1`", $value );
-        $value = preg_replace( "/([\:\?]+)`\b([\w]+)\b`/u", "$1$2", $value );
+        $value = Utils::replace( $value, "/\b(?!.[A-Z]+)(?!as|AS)([\w]+)\b/u", "`$1`" );
+        $value = Utils::replace( $value, "/([\:\?\'\"]+)`\b([\w]+)\b`([\'\"]+)?/u", "$1$2$3" );
         return $value;
     }
 
@@ -225,6 +237,7 @@ class Sanitize {
      */
     public static function toPath( $value=null )
     {
+        $value = self::toString( $value );
         $value = rtrim( str_replace( "\\", "/", trim( $value ) ), "/" );
         $value = Utils::replace( $value, "/\/\/+/", "/" );
         return $value;
@@ -235,9 +248,9 @@ class Sanitize {
      */
     public static function toExtension( $value=null )
     {
-        $parts = explode( ".", trim( $value ) );
+        $parts = explode( ".", self::toString( $value ) );
         $value = trim( array_pop( $parts ) );
-        $value = preg_replace( "/[^a-zA-Z0-9]+/", "", $value );
+        $value = Utils::replace( $value, "/[^a-zA-Z0-9]+/", "" );
         return strtolower( $value );
     }
 
@@ -246,7 +259,6 @@ class Sanitize {
      */
     public static function toTitle( $value=null )
     {
-        $value = self::toText( $value );
         $value = Utils::replace( $value, "/[^\w\!\@\#\$\%\^\&\*\(\)\_\+\-\=\{\}\[\]\:\;\"\"\,\.\/\?\ ]+/ui" );
         $value = Utils::replace( $value, "/\.[a-zA-Z0-9]+$/ui" );
         $value = self::toSingleSpaces( $value );
@@ -259,6 +271,7 @@ class Sanitize {
     public static function toName( $value=null )
     {
         $value = Utils::replace( $value, "/[^\p{L}\'\-\ ]+/ui", " " );
+        $value = Utils::replace( $value, "/\'\s+/u", "'" );
         $value = self::toSingleSpaces( $value );
         return $value;
     }
@@ -289,8 +302,9 @@ class Sanitize {
      */
     public static function toUrl( $value=null )
     {
+        $value = self::toText( $value );
+        $value = Utils::replace( $value, "/[^\d\p{L}\.\_\-\@\#\?\%\&\=\+\/\:\;\~\(\)\{\}\[\]\"\"\\]+/u" );
         $value = str_replace( "\\", "/", trim( $value ) );
-        $value = Utils::replace( $value, "/[^\d\p{L}\.\_\-\@\#\?\%\&\=\+\/\:\;\~\(\)\{\}\[\]\"\"]+/u" );
         return $value;
     }
 
@@ -299,7 +313,12 @@ class Sanitize {
      */
     public static function toHostname( $value=null )
     {
-        $value = parse_url( trim( $value ), PHP_URL_HOST );
+        $value = self::toString( $value );
+
+        if( $host = parse_url( $value, PHP_URL_HOST ) )
+        {
+            return $host;
+        }
         return $value;
     }
 
@@ -328,11 +347,10 @@ class Sanitize {
      */
     public static function toIp( $value=null )
     {
-        $value = Utils::replace( $value, "/\/[0-9]+$/" );
-        $value = Utils::replace( $value, "/[^0-9\.]+/", "." );
-        $value = Utils::replace( $value, "/\.\.+/u", "." );
-        $value = trim( $value, ". " );
-        return $value;
+        $value = Utils::replace( $value, "/[^\d\.]+/u", " " );
+        $value = self::toSingleSpaces( $value );
+        $list  = explode( " " , trim( $value, ". " ) );
+        return array_shift( $list );
     }
 
     /**
