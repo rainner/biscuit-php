@@ -39,7 +39,7 @@ class Import {
     }
 
     /**
-     * Set file format to me processed
+     * Set format (method) used to serialize the file data
      */
     public function setFormat( $format )
     {
