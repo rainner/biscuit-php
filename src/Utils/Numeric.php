@@ -25,9 +25,10 @@ class Numeric {
     /**
      * Return singular or plutal noun based on a number
      */
-    public static function toNoun( $count=0, $singular="", $plutal="" )
+    public static function toNoun( $count=0, $singular="item", $plutal="items" )
     {
-        $word = ( intval( $count ) === 1 ) ? trim( $singular ) : trim( $plutal );
+        $count = Sanitize::toNumber( $count );
+        $word  = ( $count === 1 ) ? trim( $singular ) : trim( $plutal );
         return trim( number_format( $count ) ." ". $word );
     }
 
@@ -53,7 +54,7 @@ class Numeric {
     }
 
     /**
-     * Converts a numeric value to a signed currency string
+     * Calculates percentage amount for value of total
      */
     public static function toPercent( $value=0, $total=0, $places=1, $symbol="%" )
     {
@@ -95,11 +96,11 @@ class Numeric {
     /**
      * Adds leading zeros to the begining of a number if it is less than a length
      */
-    public static function padZero( $value=0, $length=2 )
+    public static function padZero( $value=0, $length=0 )
     {
         $value = Sanitize::toNumber( $value );
         $value = self::unpadZero( $value );
-        $value = sprintf( "%0".$length."d", $value );
+        $value = ( $length > 0 ) ? sprintf( "%0".$length."d", $value ) : "";
         return $value;
     }
 
@@ -133,12 +134,15 @@ class Numeric {
      */
     public static function toDate( $time=0, $format="F jS, Y", $default="Never" )
     {
-        $time   = self::toTimestamp( $time );
-        $format = Utils::value( $format, "F jS, Y" );
-
-        if( $time > 0 )
+        if( $time )
         {
-            return date( $format, $time );
+            $stamp  = self::toTimestamp( $time );
+            $format = Utils::value( $format, "F jS, Y" );
+
+            if( $stamp > 0 )
+            {
+                return date( $format, $stamp );
+            }
         }
         return $default;
     }
@@ -148,21 +152,24 @@ class Numeric {
      */
     public static function toElapsed( $time=0, $default="just now" )
     {
-        $time    = self::toTimestamp( $time );
-        $elapsed = time() - $time;
-
-        if( $elapsed > 0 )
+        if( $time )
         {
-            if( $elapsed > 60 )
+            $stamp   = self::toTimestamp( $time );
+            $elapsed = time() - $stamp;
+
+            if( $elapsed > 0 )
             {
-                foreach( self::_tokens() as $unit => $word )
+                if( $elapsed > 60 )
                 {
-                    if( $elapsed < $unit ) continue;
-                    $amount = floor( $elapsed / $unit );
-                    return Numeric::toNoun( $amount, $word, $word."s" ) ." ago";
+                    foreach( self::_tokens() as $unit => $word )
+                    {
+                        if( $elapsed < $unit ) continue;
+                        $amount = floor( $elapsed / $unit );
+                        return Numeric::toNoun( $amount, $word, $word."s" ) ." ago";
+                    }
                 }
+                return "less than a minute ago";
             }
-            return "less than a minute ago";
         }
         return $default;
     }
@@ -170,18 +177,21 @@ class Numeric {
     /**
      * Converts past time and a wait period into a countdown sentence
      */
-    public static function toCountdown( $time=0, $wait=300 )
+    public static function toCountdown( $time=0, $wait=0 )
     {
-        $time    = self::toTimestamp( $time );
-        $elapsed = $time - ( time() - $wait );
-
-        if( $elapsed > 0 )
+        if( $time )
         {
-            foreach( self::_tokens() as $unit => $word )
+            $stamp   = self::toTimestamp( $time );
+            $elapsed = $stamp - ( time() - $wait );
+
+            if( $elapsed > 0 )
             {
-                if( $elapsed < $unit ) continue;
-                $amount = ceil( $elapsed / $unit );
-                return Numeric::toNoun( $amount, $word, $word."s" );
+                foreach( self::_tokens() as $unit => $word )
+                {
+                    if( $elapsed < $unit ) continue;
+                    $amount = ceil( $elapsed / $unit );
+                    return Numeric::toNoun( $amount, $word, $word."s" );
+                }
             }
         }
         return "0 seconds";
@@ -192,16 +202,19 @@ class Numeric {
      */
     public static function toAge( $time=0 )
     {
-        $time    = self::toTimestamp( $time );
-        $elapsed = time() - $time;
-
-        if( $elapsed > 0 )
+        if( $time )
         {
-            foreach( self::_tokens() as $unit => $word )
+            $stamp   = self::toTimestamp( $time );
+            $elapsed = time() - $stamp;
+
+            if( $elapsed > 0 )
             {
-                if( $elapsed < $unit ) continue;
-                $amount = floor( $elapsed / $unit );
-                return Numeric::toNoun( $amount, $word, $word."s" ) ." old";
+                foreach( self::_tokens() as $unit => $word )
+                {
+                    if( $elapsed < $unit ) continue;
+                    $amount = floor( $elapsed / $unit );
+                    return Numeric::toNoun( $amount, $word, $word."s" ) ." old";
+                }
             }
         }
         return "0 years old";
