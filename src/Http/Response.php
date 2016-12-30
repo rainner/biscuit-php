@@ -10,6 +10,7 @@ namespace Biscuit\Http;
 
 use Biscuit\Data\View;
 use Biscuit\Utils\Sanitize;
+use Biscuit\Utils\Numeric;
 use Biscuit\Utils\Utils;
 
 class Response {
@@ -64,20 +65,6 @@ class Response {
     }
 
     /**
-     * Set single header
-     */
-    public function setHeader( $name, $value="" )
-    {
-        $name = Sanitize::toLowerCase( $name );
-
-        if( !empty( $name ) )
-        {
-            $this->_headers[ $name ] = trim( $value );
-        }
-        return $this;
-    }
-
-    /**
      * Set headers from an array list
      */
     public function setHeaders( $list )
@@ -96,16 +83,38 @@ class Response {
     }
 
     /**
+     * Set single header
+     */
+    public function setHeader( $name, $value="" )
+    {
+        $name = Sanitize::toSlug( $name );
+
+        if( !empty( $name ) )
+        {
+            $this->_headers[ $name ] = trim( $value );
+        }
+        return $this;
+    }
+
+    /**
      * Remove added header by name
      */
     public function removeHeader( $name )
     {
-        $name = Sanitize::toLowerCase( $name );
+        $name = Sanitize::toLowerCase( Sanitize::toSlug( $name ) );
 
-        if( !empty( $name ) && array_key_exists( $name, $this->_headers ) )
+        if( !empty( $name ) )
         {
-            unset( $this->_headers[ $name ] );
+            foreach( $this->_headers as $key => $value )
+            {
+                if( Sanitize::toLowerCase( $key ) === $name )
+                {
+                    unset( $this->_headers[ $key ] );
+                    break;
+                }
+            }
         }
+        return $this;
     }
 
     /**
@@ -113,11 +122,17 @@ class Response {
      */
     public function getHeader( $name, $default="" )
     {
-        $name = Sanitize::toLowerCase( $name );
+        $name = Sanitize::toLowerCase( Sanitize::toSlug( $name ) );
 
-        if( !empty( $name ) && array_key_exists( $name, $this->_headers ) )
+        if( !empty( $name ) )
         {
-            return $this->_headers[ $name ];
+            foreach( $this->_headers as $key => $value )
+            {
+                if( Sanitize::toLowerCase( $key ) === $name )
+                {
+                    return $this->_headers[ $key ];
+                }
+            }
         }
         return $default;
     }
@@ -135,7 +150,7 @@ class Response {
      */
     public function cacheExpire( $value=null )
     {
-        $time = Sanitize::toTimestamp( $value );
+        $time = Numeric::toTimestamp( $value );
 
         if( !empty( $time ) )
         {
@@ -167,7 +182,7 @@ class Response {
      */
     public function rememberSsl( $value=null )
     {
-        $time = Sanitize::toTimestamp( $value );
+        $time = Numeric::toTimestamp( $value );
 
         if( !empty( $time ) )
         {
