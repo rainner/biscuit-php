@@ -91,7 +91,7 @@ class Request {
     {
         $name = strtolower( Sanitize::toSlug( $name ) );
 
-        if( !empty( $name ) )
+        if( !empty( $name ) && function_exists( "getallheaders" ) )
         {
             foreach( getallheaders() as $k => $value )
             {
