@@ -1,7 +1,7 @@
 <?php
 return [
     "testdata" => [
-        "dataval1" => time(),
-        "dataval2" => uniqid(),
+        "foo" => "1234",
+        "bar" => "abcd",
     ]
 ];
