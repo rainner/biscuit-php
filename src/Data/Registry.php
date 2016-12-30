@@ -11,6 +11,7 @@ namespace Biscuit\Data;
 use Closure;
 use Biscuit\Utils\Sanitize;
 use Biscuit\Utils\Utils;
+use Biscuit\Utils\Validate;
 
 class Registry {
 
@@ -255,22 +256,27 @@ class Registry {
         $args   = func_get_args();
         $key    = count( $args ) ? array_shift( $args ) : ""; // extract first arg as local key
         $filter = count( $args ) ? array_shift( $args ) : ""; // extract second arg as filter callable
-        $value  = $this->getKey( $key, "" );
-        $base   = "\\Biscuit\\Utils\\";
+        $base   = "\\Biscuit\\Utils\\"; // default namespace
         $output = "";
 
-        if( !empty( $filter ) )
+        if( $this->hasKey( $key ) && !empty( $filter ) )
         {
+            $value  = $this->getKey( $key, "" );
             $params = [ $value ]; // use value as first param for filter callable
-            foreach( $args as $arg ) $params[] = $arg;
 
+            foreach( $args as $arg )
+            {
+                $params[] = $arg;
+            }
             if( is_callable( $filter ) )
             {
                 $output = call_user_func_array( $filter, $params );
+                $this->setKey( $key, $output );
             }
             else if( is_callable( $base.$filter ) )
             {
                 $output = call_user_func_array( $base.$filter, $params );
+                $this->setKey( $key, $output );
             }
         }
         return $output;
