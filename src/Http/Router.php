@@ -174,16 +174,29 @@ class Router {
         if( $controller = realpath( $this->_ctrpath."/".$this->_controller.".php" ) )
         {
             include_once( $controller ); // register actions...
-            $this->trigger( "*", "*", $this->_params ); // all cases
-            $this->trigger( "*", $this->_action, $this->_params ); // all methods
-            $this->trigger( $this->_method, "*", $this->_params ); // all actions
-            $this->trigger( $this->_method, $this->_action, $this->_params ); // request action
+
+            if( $output = $this->trigger( "*", "*", $this->_params ) )
+            {
+                return $output;
+            }
+            if( $output = $this->trigger( "*", $this->_action, $this->_params ) )
+            {
+                return $output;
+            }
+            if( $output = $this->trigger( $this->_method, "*", $this->_params ) )
+            {
+                return $output;
+            }
+            if( $output = $this->trigger( $this->_method, $this->_action, $this->_params ) )
+            {
+                return $output;
+            }
         }
         // controller not found, or did not respond, handle fallback/404 response
         if( $fallback instanceof Closure )
         {
             $fallback = $fallback->bindTo( $this );
-            call_user_func( $fallback );
+            return call_user_func( $fallback );
         }
         // final text response
         $this->_response->sendText( 404,
