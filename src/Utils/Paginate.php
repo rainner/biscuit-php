@@ -68,7 +68,7 @@ class Paginate {
         {
             $this->_total = intval( $total );
         }
-        $this->_calculateLastPage();
+        $this->_last = $this->getTotalPages();
     }
 
     /**
@@ -88,7 +88,7 @@ class Paginate {
         {
             $this->_limit = intval( $limit );
         }
-        $this->_calculateLastPage();
+        $this->_last = $this->getTotalPages();
     }
 
     /**
@@ -350,14 +350,6 @@ class Paginate {
             "display" => $display,
             "link"    => '<a class="'.implode( " ", $classes ).'" href="'.$url.'">'.$display."</a>",
         );
-    }
-
-    /**
-     * Calculate the last page number
-     */
-    private function _calculateLastPage()
-    {
-        $this->_last = ( $this->_total > $this->_limit ) ? ( $this->_total - $this->_limit ) : $this->_total;
     }
 
 }
