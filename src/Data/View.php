@@ -135,7 +135,7 @@ class View extends Registry {
      */
     public function value()
     {
-        $value = call_user_func_array( "Biscuit\Utils\Utils::value", func_get_args() );
+        $value = call_user_func_array( "Biscuit\\Utils\\Utils::value", func_get_args() );
         return is_string( $value ) ? trim( $value ) : $value;
     }
 
