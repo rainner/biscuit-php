@@ -8,7 +8,7 @@
  */
 namespace Biscuit\Crypt;
 
-use Biscuit\Util\Value;
+use Biscuit\Utils\Utils;
 use Exception;
 
 class Encryption {
@@ -22,8 +22,8 @@ class Encryption {
      */
     public function __construct( $key="", $method="" )
     {
-        $this->setCryptKey( Value::get( $key, @$_ENV["CRYPT_KEY"], "-cryptkey-" ) );
-        $this->setCryptMethod( Value::get( $method, @$_ENV["CRYPT_METHOD"], "AES-128-CBC" ) );
+        $this->setCryptKey( Utils::value( $key, @$_ENV["Crypt_Key"], "-cryptkey-" ) );
+        $this->setCryptMethod( Utils::value( $method, @$_ENV["Crypt_Method"], "AES-128-CBC" ) );
     }
 
     /**
