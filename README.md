@@ -4,6 +4,9 @@
 
 # Biscuit PHP
 
+[![Build Status](https://travis-ci.org/rainner/biscuit-php.svg?branch=master)](https://travis-ci.org/rainner/biscuit-php)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Biscuit PHP is a small stand-alone collection of classes that work together as a framework to help build small server-side applications with PHP.
 It's intended to be minimal with no need for dependencies and comes with the basic tools needed for building a small RESTful api, or web application backend.
 See the table below for what is included.
