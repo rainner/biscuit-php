@@ -73,7 +73,10 @@ class Validate {
      */
     public static function isBool( $value=null )
     {
-        return ( is_bool( $value ) || preg_match( "/^(Y|N|ON|OFF|YES|NO|TRUE|FALSE)$/ui", $value ) === 1 ) ? true : false;
+        if( is_bool( $value ) ) return true;
+        if( is_numeric( $value ) && preg_match( "/^(0|1)$/u", trim( $value ) ) === 1 ) return true;
+        if( is_string( $value ) && preg_match( "/^(Y|N|ON|OFF|YES|NO|TRUE|FALSE)$/u", strtoupper( trim( $value ) ) ) === 1 ) return true;
+        return false;
     }
 
     /**
@@ -89,7 +92,7 @@ class Validate {
      */
     public static function isPhone( $value=null )
     {
-        return preg_match( "/^([1+-.]{2,3})?\(?([\d]{3})\)?[-. ]?([\d]{3})[-. ]?([\d]{4})$/", $value ) === 1 ? true : false;
+        return preg_match( "/^([1+-. ]{2,3})?\(?([\d]{3})\)?[-. ]?([\d]{3})[-. ]?([\d]{4})$/", $value ) === 1 ? true : false;
     }
 
     /**

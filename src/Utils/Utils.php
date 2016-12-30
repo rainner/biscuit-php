@@ -90,22 +90,22 @@ class Utils {
     /**
      * Contact array into inline string
      */
-    public static function concat( $value )
+    public static function concat( $value, $glue=" " )
     {
-        $output = "";
+        $output = [];
 
         if( is_array( $value ) )
         {
             foreach( $value as $entry )
             {
-                $output .= " ".self::concat( $entry );
+                $output[] = self::concat( $entry );
             }
         }
         else if( is_string( $value ) || is_numeric( $value ) )
         {
-            $output .= " ".trim( $value );
+            $output[] = trim( $value );
         }
-        return Sanitize::toSingleSpaces( $output );
+        return Sanitize::toSingleSpaces( implode( $glue, $output ) );
     }
 
     /**
