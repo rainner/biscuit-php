@@ -374,6 +374,26 @@ class Router {
     }
 
     /**
+     * Helper: run custom callback to configure local response objet
+     */
+    public function withResponse( $callback )
+    {
+        if( $callback instanceof Closure )
+        {
+            $callback = $callback->bindTo( $this );
+            call_user_func( $callback, $this->_response );
+        }
+    }
+
+    /**
+     * Helper: set a custom response header
+     */
+    public function sendHeader( $name, $value="" )
+    {
+        $this->_response->setHeader( $name, $value );
+    }
+
+    /**
      * Helper: send PlainText response
      */
     public function sendText( $status, $body=null )
