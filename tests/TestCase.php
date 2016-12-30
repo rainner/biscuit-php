@@ -2,7 +2,7 @@
 /**
  * TestCase Class
  */
-abstract class TestCase extends PHPUnit\Framework\TestCase {
+abstract class TestCase extends PHPUnit_Framework_TestCase {
 
     /**
      * setUp
