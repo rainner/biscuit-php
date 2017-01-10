@@ -14,7 +14,7 @@ use Closure;
 use Biscuit\Utils\Sanitize;
 use Biscuit\Utils\Utils;
 
-class MySQL extends SqlBuilder implements DbInterface {
+class MySQL extends SQLBuilder implements DbInterface {
 
     // props
     protected $_pdo      = null;         // PDO instance

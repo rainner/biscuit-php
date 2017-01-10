@@ -14,7 +14,7 @@ use Closure;
 use Biscuit\Utils\Sanitize;
 use Biscuit\Utils\Utils;
 
-class SQLite extends SqlBuilder implements DbInterface {
+class SQLite extends SQLBuilder implements DbInterface {
 
     // props
     protected $_pdo      = null;     // PDO instance
