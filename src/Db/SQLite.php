@@ -28,6 +28,7 @@ class SQLite extends SQLBuilder implements DbInterface {
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         PDO::ATTR_STRINGIFY_FETCHES => false,
         PDO::ATTR_EMULATE_PREPARES => false,
+        PDO::MYSQL_ATTR_FOUND_ROWS => true,
         PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8",
         PDO::ATTR_TIMEOUT => 5,
     );
@@ -50,7 +51,10 @@ class SQLite extends SQLBuilder implements DbInterface {
     {
         if( is_array( $options ) )
         {
-            $this->_options = array_merge( $this->_options, $options );
+            foreach( $options as $key => $value )
+            {
+                $this->_options[ $key ] = $value;
+            }
         }
     }
 

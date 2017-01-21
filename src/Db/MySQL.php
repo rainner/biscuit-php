@@ -32,6 +32,7 @@ class MySQL extends SQLBuilder implements DbInterface {
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         PDO::ATTR_STRINGIFY_FETCHES => false,
         PDO::ATTR_EMULATE_PREPARES => false,
+        PDO::MYSQL_ATTR_FOUND_ROWS => true,
         PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8",
         PDO::ATTR_TIMEOUT => 5,
     );
@@ -41,47 +42,25 @@ class MySQL extends SQLBuilder implements DbInterface {
      */
     public function setServer( $server, $port=3306 )
     {
-        if( is_string( $server ) )
-        {
-            $this->_server = trim( $server );
-        }
-        if( is_numeric( $port ) )
-        {
-            $this->_port = trim( $port );
-        }
+        $this->_server = trim( $server );
+        $this->_port = trim( $port );
+    }
+
+    /**
+     * Set the database username and password
+     */
+    public function setAuth( $username, $password="" )
+    {
+        $this->_username = trim( $username );
+        $this->_password = $password;
     }
 
     /**
      * Set the name of the database to connect to on the server
      */
-    public function setDbName( $dbname )
+    public function setDatabase( $database )
     {
-        if( is_string( $dbname ) )
-        {
-            $this->_database = trim( $dbname );
-        }
-    }
-
-    /**
-     * Set the database username
-     */
-    public function setUsername( $username )
-    {
-        if( is_string( $username ) )
-        {
-            $this->_username = trim( $username );
-        }
-    }
-
-    /**
-     * Set the database username
-     */
-    public function setPassword( $password )
-    {
-        if( is_string( $password ) )
-        {
-            $this->_password = trim( $password );
-        }
+        $this->_database = trim( $database );
     }
 
     /**
@@ -91,7 +70,10 @@ class MySQL extends SQLBuilder implements DbInterface {
     {
         if( is_array( $options ) )
         {
-            $this->_options = array_merge( $this->_options, $options );
+            foreach( $options as $key => $value )
+            {
+                $this->_options[ $key ] = $value;
+            }
         }
     }
 
