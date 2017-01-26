@@ -5,6 +5,12 @@ php:
   - 5.6
   - 7.0
 
+services:
+  - mysql
+
+before_install:
+  - mysql -e 'CREATE DATABASE biscuit_test_db;'
+
 before_script:
   - composer install
   - composer dump-autoload
