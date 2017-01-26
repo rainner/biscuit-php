@@ -145,9 +145,9 @@ class SQLite extends SQLBuilder implements DbInterface {
     {
         $table = Sanitize::toSqlName( $table );
 
-        if( $result = $this->query( "SELECT 1 FROM ".$table." LIMIT 1" ) )
+        if( $this->query( "SELECT 1 FROM ".$table." LIMIT 1" ) )
         {
-            return $result;
+            return true;
         }
         return false;
     }
@@ -159,10 +159,10 @@ class SQLite extends SQLBuilder implements DbInterface {
     {
         $table = Sanitize::toSqlName( $table );
 
-        if( $result = $this->query( "DELETE FROM ".$table ) )
+        if( $this->query( "DELETE FROM ".$table ) )
         {
             $this->query( "VACUUM" );
-            return $result;
+            return true;
         }
         return false;
     }
@@ -174,10 +174,10 @@ class SQLite extends SQLBuilder implements DbInterface {
     {
         $table = Sanitize::toSqlName( $table );
 
-        if( $result = $this->query( "DROP TABLE ".$table ) )
+        if( $this->query( "DROP TABLE ".$table ) )
         {
             $this->query( "VACUUM" );
-            return $result;
+            return true;
         }
         return false;
     }
