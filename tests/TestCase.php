@@ -7,7 +7,7 @@ abstract class TestCase extends PHPUnit_Framework_TestCase {
     /**
      * setUp
      */
-    public function setUp()
+    public function setup()
     {
         parent::setUp();
         // ...
