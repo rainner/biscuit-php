@@ -38,6 +38,26 @@ interface DbInterface {
     public function query( $query="", $data=[] );
 
     /**
+     * Checks if a table exists and return bool
+     */
+    public function hasTable( $table="" );
+
+    /**
+     * Try to remove all rows from a table and return bool
+     */
+    public function emptyTable( $table="" );
+
+    /**
+     * Try to drop a table and return bool
+     */
+    public function dropTable( $table="" );
+
+    /**
+     * Get array list of installed created tables in current db
+     */
+    public function getTables( $match="" );
+
+    /**
      * Returns a single row from result object
      */
     public function getRow( $query="", $data=[] );
