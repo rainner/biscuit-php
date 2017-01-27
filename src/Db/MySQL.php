@@ -159,11 +159,11 @@ class MySQL extends SQLBuilder implements DbInterface {
     /**
      * Checks if a table has been created
      */
-    public function hasTable( $table )
+    public function hasTable( $table="" )
     {
         $table = Sanitize::toSqlName( $table );
 
-        if( $this->query( "SELECT 1 FROM ".$table." LIMIT 1" ) )
+        if( $table && $this->query( "SELECT 1 FROM ".$table." LIMIT 1" ) )
         {
             return true;
         }
@@ -173,11 +173,11 @@ class MySQL extends SQLBuilder implements DbInterface {
     /**
      * Remove all rows from a table
      */
-    public function emptyTable( $table )
+    public function emptyTable( $table="" )
     {
         $table = Sanitize::toSqlName( $table );
 
-        if( $this->query( "DELETE FROM ".$table ) )
+        if( $table && $this->query( "DELETE FROM ".$table ) )
         {
             $this->query( "OPTIMIZE TABLE ".$table );
             return true;
@@ -188,15 +188,33 @@ class MySQL extends SQLBuilder implements DbInterface {
     /**
      * Remove table and all rows
      */
-    public function dropTable( $table )
+    public function dropTable( $table="" )
     {
         $table = Sanitize::toSqlName( $table );
 
-        if( $this->query( "DROP TABLE ".$table ) )
+        if( $table && $this->query( "DROP TABLE ".$table ) )
         {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Get array list of installed created tables in current db
+     */
+    public function getTables( $match="" )
+    {
+        $output = [];
+        $search = !empty( $match ) ? " LIKE '%".trim( $match )."%'" : "";
+
+        if( $result = $this->query( "SHOW TABLES".$search ) )
+        {
+            while( $tb = $result->fetch( PDO::FETCH_NUM ) )
+            {
+                $output[] = $tb[0];
+            }
+        }
+        return $output;
     }
 
     /**
