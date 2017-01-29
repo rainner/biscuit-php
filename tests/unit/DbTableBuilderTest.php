@@ -17,7 +17,6 @@ class DbTableBuilderTest extends TestCase {
         $table->addColumn( "title", "char(100)", "" );
         $table->addColumn( "content", "text" );
         $table->uniqueIndex( "title" );
-        $table->searchIndex( "content" );
 
         $table->addRow([
             "created" => time(),
