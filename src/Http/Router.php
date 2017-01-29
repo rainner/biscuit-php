@@ -48,7 +48,7 @@ class Router {
 
         $route  = Connection::getPath();
         $public = Server::getScriptPath();
-        $base   = dirname( $public )."/app/areas";
+        $base   = dirname( $public )."/areas";
 
         $this->setBasePath( $base );
         $this->setPublicPath( $public );
