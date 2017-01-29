@@ -81,7 +81,7 @@ class Backup {
         {
             if( empty( $table ) ) continue;
 
-            // init file stream 
+            // init file stream
             $stream  = fopen( $folder."/".$table.".sql", "wb" );
             $result  = null;
             $entries = [];
@@ -111,12 +111,19 @@ class Backup {
             {
                 if( $result = $this->_db->query( "SELECT `sql` FROM `sqlite_master` WHERE `type`='table' AND `name`='".$table."'" ) )
                 {
-                    $create = $result->fetch( PDO::FETCH_ASSOC );
+                    $create  = $result->fetch( PDO::FETCH_ASSOC );
+                    $indexes = $this->_getSqliteKeys( $table );
 
                     if( !empty( $create["sql"] ) )
                     {
                         fwrite( $stream, "-- Table (".$table.") schema -- \n" );
                         fwrite( $stream, $this->_fixCreate( $create["sql"] )." \n\n" );
+                    }
+                    if( !empty( $indexes ) )
+                    {
+                        fwrite( $stream, "-- Table index list -- \n" );
+                        foreach( $indexes as $index ) fwrite( $stream, $index."; \n" );
+                        fwrite( $stream, "\n" );
                     }
                 }
             }
@@ -143,6 +150,38 @@ class Backup {
             }
         }
         return $total;
+    }
+
+    /**
+     * Get list of queries for creating sqlite table index keys
+     */
+    private function _getSqliteKeys( $table )
+    {
+        $output = [];
+
+        if( $result = $this->_db->query( "PRAGMA index_list(`".$table."`)" ) )
+        {
+            $list = $result->fetchAll( PDO::FETCH_ASSOC );
+
+            for( $i = 0; $i < count( $list ); $i++ )
+            {
+                $index   = $list[ $i ];
+                $name    = !empty( $index["name"] ) ? $index["name"] : "?";
+                $primary = !empty( $index["primary"] ) ? " PRIMARY" : "";
+                $unique  = !empty( $index["unique"] ) ? " UNIQUE" : "";
+                $columns = [];
+
+                if( $result = $this->_db->query( "PRAGMA index_info(`".$name."`)" ) )
+                {
+                    while( $info = $result->fetch( PDO::FETCH_ASSOC ) )
+                    {
+                        $columns[] = !empty( $info["name"] ) ? $info["name"] : "?";
+                    }
+                }
+                $output[] = "CREATE".$primary.$unique." INDEX `".$name."` ON `".$table."` (`".implode( "`,`", $columns )."`)";
+            }
+        }
+        return $output;
     }
 
     /**
