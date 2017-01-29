@@ -46,9 +46,13 @@ class Router {
         $this->_response = new Response();
         $this->_method   = Connection::getMethod();
 
-        $this->setBasePath( dirname( @$_SERVER["DOCUMENT_ROOT"] )."/areas" );
-        $this->setPublicPath( @$_SERVER["DOCUMENT_ROOT"] );
-        $this->setRoute( Connection::getPath() );
+        $route  = Connection::getPath();
+        $public = Server::getScriptPath();
+        $base   = dirname( $public )."/app/areas";
+
+        $this->setBasePath( $base );
+        $this->setPublicPath( $public );
+        $this->setRoute( $route );
     }
 
     /**
@@ -158,6 +162,9 @@ class Router {
      */
     public function resolve( $fallback=null )
     {
+        // parse assigned route
+        $this->parseRoute();
+
         // resolve local paths
         $this->_cnfpath = $this->_basepath."/".$this->_area."/configs";
         $this->_ctrpath = $this->_basepath."/".$this->_area."/controllers";
@@ -200,7 +207,7 @@ class Router {
         }
         // final text response
         $this->_response->sendText( 404,
-            "The requested route could not be resolved, or did not send a response: (".$this->_route.")."
+            "The requested route could not be resolved: (".$this->_route.")."
         );
     }
 
@@ -221,15 +228,24 @@ class Router {
     }
 
     /**
-     * Resolve route details for a given request path
+     * Set the current path to be routed
      */
     public function setRoute( $route="/" )
     {
-        $this->_route = $route;
+        $this->_route = ( !empty( $route ) && is_string( $route ) ) ? trim( $route ) : "/";
+    }
 
-        $route = trim( $route, "/" );
-        $route = preg_replace( "/[^\w\-\:\/]+/", "", $route );
-        $route = preg_replace( "/\/\/+/", "/", $route );
+    /**
+     * Resolve current route details
+     */
+    public function parseRoute()
+    {
+        $route = trim( $this->_route, "/" );
+        $route = preg_replace( "/[^\w\-\:\/]+/", "_", $route );
+        $route = preg_replace( "/[\/]+/", "/", $route );
+        $route = preg_replace( "/[\-]+/", "-", $route );
+        $route = preg_replace( "/[\_]+/", "_", $route );
+        $route = trim( $route, "-_ " );
 
         $this->_area       = "site";
         $this->_controller = "home";
@@ -240,13 +256,13 @@ class Router {
         {
             $this->_area = array_shift( $this->_params );
         }
-        if( !empty( $this->_params[0] ) )
+        if( !empty( $this->_params[0] ) && $this->controllerExists( $this->_params[0] ) )
         {
-            $this->_controller = Sanitize::toKey( array_shift( $this->_params ) );
+            $this->_controller = array_shift( $this->_params );
         }
         if( !empty( $this->_params[0] ) )
         {
-            $this->_action = Sanitize::toKey( array_shift( $this->_params ) );
+            $this->_action = array_shift( $this->_params );
         }
     }
 
@@ -303,7 +319,8 @@ class Router {
      */
     public function areaExists( $area )
     {
-        return ( !empty( $area ) && is_dir( $this->_basepath."/".$area ) ) ? true : false;
+        $folder = $this->_basepath."/".$area;
+        return ( !empty( $area ) && is_dir( $folder ) ) ? true : false;
     }
 
     /**
@@ -320,6 +337,15 @@ class Router {
     public function isController( $controller )
     {
         return ( $this->_controller === $controller ) ? true : false;
+    }
+
+    /**
+     * Check controller file exists
+     */
+    public function controllerExists( $controller )
+    {
+        $file = $this->_basepath."/".$this->_area."/controllers/".$controller.".php";
+        return ( !empty( $controller ) && is_file( $file ) ) ? true : false;
     }
 
     /**
