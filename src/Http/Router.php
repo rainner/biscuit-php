@@ -42,17 +42,17 @@ class Router {
      */
     public function __construct()
     {
-        $this->_request  = new Request();
-        $this->_response = new Response();
-        $this->_method   = Connection::getMethod();
-
-        $route  = Connection::getPath();
+        // assumed initial paths
         $public = Server::getScriptPath();
         $base   = dirname( $public )."/areas";
 
+        $this->_request  = new Request();
+        $this->_response = new Response();
+        $this->_method   = Connection::getMethod();
+        $this->_route    = Connection::getPath();
+
         $this->setBasePath( $base );
         $this->setPublicPath( $public );
-        $this->setRoute( $route );
     }
 
     /**
@@ -104,7 +104,7 @@ class Router {
     }
 
     /**
-     * Add persistent data to be passed to all HTML template repsonses for all routes
+     * Add persistent data to be passed to all HTML template responses for all routes
      */
     public function persist( $key, $value=null )
     {
@@ -162,50 +162,31 @@ class Router {
      */
     public function resolve( $fallback=null )
     {
-        // parse assigned route
-        $this->parseRoute();
+        $this->_parseRoute();
+        $this->_includeFile( $this->_cnfpath."/setup.php" );
+        $this->_includeFile( $this->_ctrpath."/".$this->_controller.".php" );
 
-        // resolve local paths
-        $this->_cnfpath = $this->_basepath."/".$this->_area."/configs";
-        $this->_ctrpath = $this->_basepath."/".$this->_area."/controllers";
-        $this->_tplpath = $this->_basepath."/".$this->_area."/templates";
-        $this->_csspath = $this->_pubpath."/css";
-        $this->_jspath  = $this->_pubpath."/js";
-
-        // load area config file, if any
-        if( $setup = realpath( $this->_cnfpath."/setup.php" ) )
+        if( $output = $this->trigger( "*", "*", $this->_params ) )
         {
-            include_once( $setup ); // init/inject objects, etc...
+            return $output;
         }
-        // controller found, trigegr actions and let it send a repsonse
-        if( $controller = realpath( $this->_ctrpath."/".$this->_controller.".php" ) )
+        if( $output = $this->trigger( "*", $this->_action, $this->_params ) )
         {
-            include_once( $controller ); // register actions...
-
-            if( $output = $this->trigger( "*", "*", $this->_params ) )
-            {
-                return $output;
-            }
-            if( $output = $this->trigger( "*", $this->_action, $this->_params ) )
-            {
-                return $output;
-            }
-            if( $output = $this->trigger( $this->_method, "*", $this->_params ) )
-            {
-                return $output;
-            }
-            if( $output = $this->trigger( $this->_method, $this->_action, $this->_params ) )
-            {
-                return $output;
-            }
+            return $output;
         }
-        // controller not found, or did not respond, handle fallback/404 response
+        if( $output = $this->trigger( $this->_method, "*", $this->_params ) )
+        {
+            return $output;
+        }
+        if( $output = $this->trigger( $this->_method, $this->_action, $this->_params ) )
+        {
+            return $output;
+        }
         if( $fallback instanceof Closure )
         {
             $fallback = $fallback->bindTo( $this );
             return call_user_func( $fallback );
         }
-        // final text response
         $this->_response->sendText( 404,
             "The requested route could not be resolved: (".$this->_route.")."
         );
@@ -232,37 +213,10 @@ class Router {
      */
     public function setRoute( $route="/" )
     {
-        $this->_route = ( !empty( $route ) && is_string( $route ) ) ? trim( $route ) : "/";
-    }
-
-    /**
-     * Resolve current route details
-     */
-    public function parseRoute()
-    {
-        $route = trim( $this->_route, "/" );
-        $route = preg_replace( "/[^\w\-\:\/]+/", "_", $route );
-        $route = preg_replace( "/[\/]+/", "/", $route );
-        $route = preg_replace( "/[\-]+/", "-", $route );
-        $route = preg_replace( "/[\_]+/", "_", $route );
-        $route = trim( $route, "-_ " );
-
-        $this->_area       = "site";
-        $this->_controller = "home";
-        $this->_action     = "index";
-        $this->_params     = explode( "/", $route );
-
-        if( !empty( $this->_params[0] ) && $this->areaExists( $this->_params[0] ) )
+        if( !empty( $route ) && is_string( $route ) && $route !== $this->_route )
         {
-            $this->_area = array_shift( $this->_params );
-        }
-        if( !empty( $this->_params[0] ) && $this->controllerExists( $this->_params[0] ) )
-        {
-            $this->_controller = array_shift( $this->_params );
-        }
-        if( !empty( $this->_params[0] ) )
-        {
-            $this->_action = array_shift( $this->_params );
+            $this->_route = ( $route === "/" ) ? $route : Sanitize::toPath( $route );
+            $this->_parseRoute();
         }
     }
 
@@ -413,7 +367,7 @@ class Router {
     }
 
     /**
-     * Helper: run custom callback to configure local response objet
+     * Helper: run custom callback to configure local response object
      */
     public function withResponse( $callback )
     {
@@ -539,6 +493,55 @@ class Router {
     }
 
     /**
+     * Include a file in $this scope
+     */
+    private function _includeFile( $file )
+    {
+        if( $file = realpath( $file ) )
+        {
+            include_once( $file );
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Resolve current route details and paths for route
+     */
+    private function _parseRoute()
+    {
+        $route = trim( $this->_route, "/" );
+        $route = preg_replace( "/[^\w\-\:\/]+/", "_", $route );
+        $route = preg_replace( "/[\/]+/", "/", $route );
+        $route = preg_replace( "/[\-]+/", "-", $route );
+        $route = preg_replace( "/[\_]+/", "_", $route );
+        $route = trim( $route, "-_ " );
+
+        $this->_area       = "site";
+        $this->_controller = "home";
+        $this->_action     = "index";
+        $this->_params     = explode( "/", $route );
+
+        if( !empty( $this->_params[0] ) && $this->areaExists( $this->_params[0] ) )
+        {
+            $this->_area = array_shift( $this->_params );
+        }
+        if( !empty( $this->_params[0] ) && $this->controllerExists( $this->_params[0] ) )
+        {
+            $this->_controller = array_shift( $this->_params );
+        }
+        if( !empty( $this->_params[0] ) )
+        {
+            $this->_action = array_shift( $this->_params );
+        }
+        $this->_cnfpath = $this->_basepath."/".$this->_area."/configs";
+        $this->_ctrpath = $this->_basepath."/".$this->_area."/controllers";
+        $this->_tplpath = $this->_basepath."/".$this->_area."/templates";
+        $this->_csspath = $this->_pubpath."/css";
+        $this->_jspath  = $this->_pubpath."/js";
+    }
+
+    /**
      * Get requested controller details if it exists
      */
     private function _getControllerInfo()
@@ -596,7 +599,7 @@ class Router {
                         }
                         $url = Server::getBaseUrl( $item["route"] );
                     }
-                    else if( !empty( $item["controller"] ) ) // contorller name given, check it...
+                    else if( !empty( $item["controller"] ) ) // controller name given, check it...
                     {
                         if( $this->_controller === $item["controller"] )
                         {
